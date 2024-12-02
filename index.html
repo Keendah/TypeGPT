@@ -85,4 +85,52 @@
             <p>Time Remaining: <span id="timer">30</span> seconds</p>
         </div>
     </div>
-    <
+    <script>
+        async function fetchPrompt() {
+            const response = await fetch('https://typegpt.onrender.com/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ prompt: "Give me an interesting prompt for a typing challenge." }),
+            });
+            const data = await response.json();
+            return data.choices[0].text.trim();
+        }
+
+        async function generateResponse(prompt) {
+            const response = await fetch('https://typegpt.onrender.com/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ prompt: prompt }),
+            });
+            const data = await response.json();
+            return data.choices[0].text.trim();
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const homeContainer = document.getElementById("home-container");
+            const gameContainer = document.getElementById("game-container");
+            const sentenceContainer = document.getElementById("sentence");
+            const userInput = document.getElementById("user-input");
+            const submitButton = document.getElementById("submit-button");
+            const homeInput = document.getElementById("home-input");
+
+            async function startGame() {
+                const prompt = await fetchPrompt();
+                homeInput.value = prompt;
+                setTimeout(async () => {
+                    const response = await generateResponse(prompt);
+                    sentenceContainer.textContent = response;
+                    gameContainer.style.display = "flex";
+                    homeContainer.style.display = "none";
+                }, 2000);
+            }
+
+            startGame();
+        });
+    </script>
+</body>
+</html>
