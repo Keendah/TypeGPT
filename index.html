@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TypeGPT Challenge</title>
+    <style>
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            background: #f3f3f3;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            position: relative;
+        }
+        #logo {
+            position: absolute;
+            top: 10px;
+            left: 20px;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        #home-container, #game-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            flex: 1;
+            width: 100%;
+        }
+        #home-container {
+            display: flex;
+        }
+        #home-input {
+            padding: 10px;
+            font-size: 18px;
+            width: 400px;
+            text-align: center;
+        }
+        #game-container {
+            display: none;
+        }
+        #sentence-container span.correct {
+            color: darkgrey;
+        }
+        #sentence-container span.incorrect {
+            color: red;
+        }
+        #submit-button {
+            margin-top: 15px;
+            padding: 10px;
+            font-size: 18px;
+            cursor: not-allowed;
+        }
+        #submit-button.enabled {
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+        }
+        #game-info {
+            margin-top: 15px;
+        }
+        #game-info p {
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div id="logo">TypeGPT</div>
+    <div id="home-container">
+        <p>How can I help you?</p>
+        <input type="text" id="home-input" readonly />
+    </div>
+    <div id="game-container">
+        <div id="sentence-container">
+            <p id="sentence">Type this sentence to start!</p>
+        </div>
+        <input type="text" id="user-input" placeholder="Start typing here..." />
+        <button id="submit-button" disabled>Submit</button>
+        <div id="game-info">
+            <p>Score: <span id="score">0</span></p>
+            <p>Level: <span id="level">1</span></p>
+            <p>Time Remaining: <span id="timer">30</span> seconds</p>
+        </div>
+    </div>
+    <script>
+        async function fetchPrompt() {
+            const response = await fetch('http://localhost:3000/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ prompt: "Give me an interesting prompt for a typing challenge." }),
+            });
+            const data = await response.json();
+            return data.choices[0].text.trim();
+        }
+
+        async function generateResponse(prompt) {
+            const response = await fetch('http://localhost:3000/generate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ prompt: prompt }),
+            });
+            const data = await response.json();
+            return data.choices[0].text.trim();
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const homeContainer = document.getElementById("home-container");
+            const gameContainer = document.getElementById("game-container");
+            const sentenceContainer = document.getElementById("sentence");
+            const userInput = document.getElementById("user-input");
+            const submitButton = document.getElementById("submit-button");
+            const homeInput = document.getElementById("home-input");
+
+            async function startGame() {
+                const prompt = await fetchPrompt();
+                homeInput.value = prompt;
+                setTimeout(async () => {
+                    const response = await generateResponse(prompt);
+                    sentenceContainer.textContent = response;
+                    gameContainer.style.display = "flex";
+                    homeContainer.style.display = "none";
+                }, 2000);
+            }
+
+            startGame();
+        });
+    </script>
+</body>
+</html>
